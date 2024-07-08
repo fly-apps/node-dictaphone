@@ -13,7 +13,7 @@ With these changes multiple replicas of this application can be deployed, even i
 In an empty directory, run:
 
 ```
-fly launch --from https://github.com/fly-apps/web-dictaphone.git
+fly launch --from https://github.com/fly-apps/node-dictaphone.git
 ```
 
 If you visit this application, you will see a standard web dictaphone example.
