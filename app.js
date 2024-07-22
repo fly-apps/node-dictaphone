@@ -7,15 +7,19 @@ import {
 } from "@aws-sdk/client-s3"
 
 import express from "express"
+import expressWs from "express-ws"
 import path from "path"
 import url from "url"
 
-const app = express()
+import pubsub from "./pubsub.js"
+
+const { app, getWss } = expressWs(express())
 const port = 3000
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 
-app.use(express.raw({ type: '*/*', limit: '10mb' }))
+app.use(express.json())
+app.use(express.raw({ type: 'audio/*', limit: '10mb' }))
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs')
 
@@ -27,6 +31,7 @@ app.get('/', async (req, res) => {
   }));
 
   res.locals.clips = objects.Contents?.map(obj => obj.Key) || []
+  res.locals.timestamp = pubsub.timestamp
   res.render('index')
 })
 
@@ -102,6 +107,30 @@ app.delete("/audio/:name", async (req, res) => {
   }
 })
 
+// Define web socket route
+app.ws('/websocket', ws => {
+  // update client on a best effort basis
+  try {
+    ws.send(pubsub.timestamp.toString());
+  } catch (error) {
+    console.error(error)
+  }
+
+  // We don’t expect any messages on websocket, but log any ones we do get.
+  ws.on('message', console.log)
+})
+
+// Publish count updates to all web socket clients
+pubsub.connect(getWss())
+
+app.post("/publish", async (req, res) => {
+  console.log(req.body)
+  await pubsub.publish(req.body.timestamp)
+  res.status(200)
+  res.send('OK')
+})
+
+// Start the server
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })

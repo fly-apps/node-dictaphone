@@ -13,13 +13,14 @@ let audioCtx;
 const canvasCtx = canvas.getContext("2d");
 
 // delete button action: delete the clip from the UI and the server
-function deleteAction(e) {
+async function deleteAction(e) {
   const clip = e.target.closest(".clip");
   const audio = clip.querySelector("audio");
   if (audio.src.startsWith("blob:")) {
     window.URL.revokeObjectURL(audio.src);
   } else {
-    fetch(audio.src, { method: "DELETE" });
+    await fetch(audio.src, { method: "DELETE" });
+    await publish();
   }
   clip.remove();
 }
@@ -57,6 +58,8 @@ async function renameAction(e) {
           });
 
           clip.style.opacity = 1;
+
+          await publish();
         }
       }
     }
@@ -100,7 +103,7 @@ if (navigator.mediaDevices.getUserMedia) {
       record.disabled = false;
     };
 
-    mediaRecorder.onstop = function (e) {
+    mediaRecorder.onstop = async function (e) {
       console.log("Last data to read (after MediaRecorder.stop() called).");
 
       const clipName = prompt(
@@ -137,24 +140,26 @@ if (navigator.mediaDevices.getUserMedia) {
       audio.src = audioURL;
       console.log("recorder stopped");
 
-      fetch("/audio/" + encodeURI(clipLabel.textContent), {
+      deleteButton.onclick = deleteAction;
+
+      clipLabel.onclick = renameAction;
+
+      let response = await fetch("/audio/" + encodeURI(clipLabel.textContent), {
         method: "PUT",
         body: blob,
         headers: {
           "Content-Type": mediaRecorder.mimeType,
         }
-      }).then(response => {
-        clipContainer.style.opacity = 1;
-        audio.preload = "none";
-        audio.type = mediaRecorder.mimeType;
-        audio.src = response.url;
-
-        window.URL.revokeObjectURL(audioURL);
       });
 
-      deleteButton.onclick = deleteAction;
+      clipContainer.style.opacity = 1;
+      audio.preload = "none";
+      audio.type = mediaRecorder.mimeType;
+      audio.src = response.url;
 
-      clipLabel.onclick = renameAction;
+      window.URL.revokeObjectURL(audioURL);
+
+      await publish();
     };
 
     mediaRecorder.ondataavailable = function (e) {
@@ -237,3 +242,16 @@ document.addEventListener('DOMContentLoaded', () => {
     clip.querySelector('p').onclick = renameAction;
   } 
 })
+
+async function publish() {
+  let  timestamp = new Date().getTime().toString();
+  document.body.dataset.timestamp = timestamp;
+  
+  await fetch("/publish", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ timestamp }),
+  });
+}
