@@ -3,8 +3,9 @@
 This is a fork of [mdn/dom-examples/media/web-dictaphone](https://github.com/mdn/dom-examples/tree/main/media/web-dictaphone#readme), with the following modifications:
 
 * adds Express server, with support for GET, POST, DELETE; including ranges
-* adds Tigris support for storing audio files.
-* adds Redis and websockets for broadcasting updates
+* adds PostgreSQL to persist an ordered list of clips
+* adds Tigris support for storing audio files
+* adds Redis and WebSockets for broadcasting updates
 
 With these changes multiple replicas of this application can be deployed, even in multiple regions.
 

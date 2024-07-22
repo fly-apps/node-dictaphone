@@ -12,6 +12,7 @@ import path from "path"
 import url from "url"
 
 import pubsub from "./pubsub.js"
+import * as db from "./db.js"
 
 const { app, getWss } = expressWs(express())
 const port = 3000
@@ -23,14 +24,18 @@ app.use(express.raw({ type: 'audio/*', limit: '10mb' }))
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs')
 
+app.use(function(error, req, res, next) {
+  console.error(error)
+  res.status(500)
+  res.json({ error: error.message, stack: error.stack })
+})
+
 const S3 = new S3Client()
 
 app.get('/', async (req, res) => {
-  const objects = await S3.send(new ListObjectsV2Command({
-    Bucket: process.env.BUCKET_NAME
-  }));
+  let list = await db.query('SELECT name FROM clips ORDER BY id')
 
-  res.locals.clips = objects.Contents?.map(obj => obj.Key) || []
+  res.locals.clips = list.rows.map(item => item.name)
   res.locals.timestamp = pubsub.timestamp
   res.render('index')
 })
@@ -82,6 +87,8 @@ app.put("/audio/:name", async (req, res) => {
       ContentType: req.headers["content-type"]
     }))
 
+    await db.query("INSERT INTO clips (name) VALUES ($1)", [req.params.name])
+
     res.json(data)
   } catch (err) {
     console.error(err)
@@ -97,6 +104,8 @@ app.delete("/audio/:name", async (req, res) => {
       Bucket: process.env.BUCKET_NAME,
       Key: req.params.name
     }))
+
+    await db.query("DELETE FROM clips WHERE name = $1", [req.params.name])
 
     res.json(data)
   } catch (err) {
