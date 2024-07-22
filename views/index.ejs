@@ -42,9 +42,22 @@
     <aside>
       <h2>Information</h2>
 
-      <p>Web dictaphone is built using <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator.getUserMedia">getUserMedia</a> and the <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder_API">MediaRecorder API</a>, which provides an easier way to capture Media streams.</p>
+      <p><a href="https://github.com/mdn/dom-examples/tree/main/media/web-dictaphone#web-dictaphone">Web dictaphone</a> is built using <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator.getUserMedia">getUserMedia</a> and the <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder_API">MediaRecorder API</a>, which provides an easier way to capture Media streams.</p>
 
       <p>Icon courtesy of <a href="http://findicons.com/search/microphone">Find Icons</a>. Thanks to <a href="http://soledadpenades.com/">Sole</a> for the Oscilloscope code!</p>
+
+      <hr>
+
+      <p>The server application consists of:</p>
+
+      <ul>
+        <li><p>An <a href="https://expressjs.com/">Express JS</a> application with support for GET, POST, DELETE; including ranges</p></li>
+        <li><p>A <a href="https://www.postgresql.org/">PostgreSQL</a> database to persist an ordered list of clips</p></li>
+        <li><p>A <a href="https://www.tigrisdata.com/">Tigris</a> bucket for storing audio files</p></li>
+        <li><p>An <a href="https://upstash.com/">Upstash</a> Redis db and <a href=""https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API">WebSockets</a> for broadcasting updates</a></p></li>
+      </ul>
+
+      <p>Multiple replicas of this application can be deployed, even in multiple regions.</p>
     </aside>
   </body>
 </html>

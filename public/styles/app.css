@@ -144,6 +144,14 @@ aside p {
   margin: 0.5rem 0;
 }
 
+aside hr {
+  margin: 2rem 0;
+}
+
+aside ul {
+  margin: 0 2rem;
+}
+
 aside a {
   color: #666;
 }
