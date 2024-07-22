@@ -124,10 +124,9 @@ app.ws('/websocket', ws => {
 pubsub.connect(getWss())
 
 app.post("/publish", async (req, res) => {
-  console.log(req.body)
+  let timestamp = pubsub.timestamp
   await pubsub.publish(req.body.timestamp)
-  res.status(200)
-  res.send('OK')
+  res.json({ timestamp })
 })
 
 // Start the server

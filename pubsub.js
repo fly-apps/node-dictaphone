@@ -14,7 +14,8 @@ export default {
       process.exit(1);
     });
 
-    timestamp = await dataClient.get('dictaphone:timestamp').catch(err => null) || timestamp;
+    timestamp = (await dataClient.get('dictaphone:timestamp').
+      catch(err => null)) || timestamp;
 
     await subClient.connect();
 

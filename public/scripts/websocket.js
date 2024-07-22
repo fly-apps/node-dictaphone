@@ -1,5 +1,6 @@
 let ws = null;
 let interval = null;
+let pendingUpdate = false;
 
 function openws() {
   if (ws) return;
@@ -28,12 +29,18 @@ function openws() {
 
   ws.onmessage = async event => {
     // pause updates if user is recording
-    let recording = document.querySelector(".record").style.backgroundColor !== ""
-
-    if (!recording && event.data != document.body.dataset.timestamp) {
+    if (document.querySelector(".record").style.backgroundColor !== "") {
+      pendingUpdate = true;
+    } else if (pendingUpdate || event.data != document.body.dataset.timestamp) {
       let response = await fetch(window.location.href, { headers: { 'Accept': 'text/html' } });
       let newdoc = new DOMParser().parseFromString(await response.text(), 'text/html');
       document.body.replaceWith(newdoc.body);
+      pendingUpdate = false;
+
+      window.document.dispatchEvent(new Event("DOMContentLoaded", {
+        bubbles: true,
+        cancelable: true
+      }));
     }
   }
 };
