@@ -26,11 +26,12 @@
       </section>
 
       <section class="sound-clips">
-<%    for (const key of clips) { -%>
+<%    for (const clip of clips) { -%>
         <article class="clip">
-          <audio controls="" src="/audio/<%- encodeURI(key) %>" preload="none"></audio>
-          <p><%= key %></p>
+          <audio controls="" src="/audio/<%- encodeURI(clip.name) %>" preload="none"></audio>
+          <p><%= clip.name %></p>
           <button class="delete">Delete</button>
+          <p class="text"><%= clip.text %></p>
         </article>
 <%    } -%>
       </section>

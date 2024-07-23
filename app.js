@@ -6,6 +6,8 @@ import {
   S3Client
 } from "@aws-sdk/client-s3"
 
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 import express from "express"
 import expressWs from "express-ws"
 import path from "path"
@@ -24,7 +26,7 @@ app.use(express.raw({ type: 'audio/*', limit: '10mb' }))
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs')
 
-app.use(function(error, req, res, next) {
+app.use(function (error, req, res, next) {
   console.error(error)
   res.status(500)
   res.json({ error: error.message, stack: error.stack })
@@ -33,11 +35,16 @@ app.use(function(error, req, res, next) {
 const S3 = new S3Client()
 
 app.get('/', async (req, res) => {
-  let list = await db.query('SELECT name FROM clips ORDER BY id')
+  let list = await db.query('SELECT name, text FROM clips ORDER BY id')
 
-  res.locals.clips = list.rows.map(item => item.name)
+  res.locals.clips = list.rows
   res.locals.timestamp = pubsub.timestamp
   res.render('index')
+
+  // wake up whisper machine
+  if (process.env.WHISPER_URL) {
+    fetch(process.env.WHISPER_URL)
+  }
 })
 
 app.use('/', express.static(path.join(__dirname, 'public')))
@@ -76,6 +83,7 @@ app.get("/audio/:name", async (req, res, next) => {
     res.setHeader("Content-Type", "application/json")
     res.json(err)
   }
+
 })
 
 app.put("/audio/:name", async (req, res) => {
@@ -90,6 +98,35 @@ app.put("/audio/:name", async (req, res) => {
     await db.query("INSERT INTO clips (name) VALUES ($1)", [req.params.name])
 
     res.json(data)
+
+    if (process.env.WHISPER_URL) {
+      // Fetch the presigned URL to download this clip
+      let clip_url = await getSignedUrl(
+        S3,
+        new GetObjectCommand({
+          Bucket: process.env.BUCKET_NAME,
+          Key: req.params.name
+        }),
+        { expiresIn: 3600 }
+      )
+
+      let input = { audio: clip_url }
+
+      let response = await fetch(process.env.WHISPER_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input })
+      })
+
+      let results = await response.json()
+
+      await db.query(
+        "UPDATE clips SET text = $1 WHERE name = $2",
+        [results.output.transcription, req.params.name]
+      )
+
+      await pubsub.publish(new Date().toISOString())
+    }
   } catch (err) {
     console.error(err)
     console.error(err.stack)

@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 
 async function publish() {
-  let  timestamp = new Date().getTime().toString();
+  let  timestamp = new Date().toISOString();
   document.body.dataset.timestamp = timestamp;
 
   await fetch("/publish", {

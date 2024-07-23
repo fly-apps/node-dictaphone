@@ -98,6 +98,21 @@ audio {
   font-size: 1rem;
 }
 
+.clip p.text {
+  display: block;
+  clear: both;
+  margin: 1.5em 1em 0.5em 1em;
+  padding: 0.5em;
+  font-size: 1rem;
+  color: #22186c;
+  border: 2px solid #22186c;
+  border-radius: 5px;
+}
+
+.clip p.text:empty {
+  display: none;
+}
+
 .clip button {
   font-size: 1rem;
   float: right;

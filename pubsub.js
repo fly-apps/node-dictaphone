@@ -3,7 +3,7 @@ import { createClient } from 'redis';
 var dataClient = createClient({ url: process.env.REDIS_URL });
 var subClient = dataClient.duplicate();
 
-var timestamp = new Date().getTime().toString();
+var timestamp = new Date().toISOString();
 
 export default {
   async connect(wss) {
