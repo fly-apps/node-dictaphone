@@ -9,6 +9,13 @@ This is a fork of [mdn/dom-examples/media/web-dictaphone](https://github.com/mdn
 
 With these changes multiple replicas of this application can be deployed, even in multiple regions.
 
+<p>When <code>WHISPER_URL</code> is set:</p>
+
+<ul>
+  <li>Clips that are stored in S3 Tigris will be sent to the <a href="https://github.com/rubys/cog-whisper/?tab=readme-ov-file#whisper-on-fly-gpus">Cog Whisper</a> application for transcription.</li>
+  <li>Transcription results will be stored in the PostgreSQL database.</li>
+  <li>Database updates will be broadcast to all connected clients.</li>
+</ul>
 
 # Deployment
 
