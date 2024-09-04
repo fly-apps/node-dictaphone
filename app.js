@@ -1,5 +1,4 @@
 import {
-  ListObjectsV2Command,
   GetObjectCommand,
   PutObjectCommand,
   DeleteObjectCommand,
